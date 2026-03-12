@@ -14,86 +14,84 @@ export default function TermsPage() {
           <div className="flex items-start gap-3">
             <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold/60" />
             <p className="text-sm leading-relaxed text-muted-foreground">
-              QuadSwap is in beta. Features may change, and we&apos;re actively
-              improving the platform. Thanks for being an early user &mdash;
-              your feedback helps us build something great for the Wake Forest
-              community.
+              QuadSwap is currently in beta. Things will evolve as we grow.
+              Thanks for being one of the first &mdash; your feedback is
+              shaping the future of this platform for Wake Forest.
             </p>
           </div>
         </div>
 
         {/* Who can use */}
         <section>
-          <h2 className="text-lg font-bold text-foreground">Who can use QuadSwap</h2>
+          <h2 className="text-lg font-bold text-foreground">Who this is for</h2>
           <ul className="mt-3 space-y-2.5 text-sm leading-relaxed text-muted-foreground">
             <li className="flex gap-2.5">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />
-              QuadSwap is exclusively for current Wake Forest University students with a valid <span className="font-medium text-foreground">@wfu.edu</span> email.
+              <span>QuadSwap is exclusively for Wake Forest students. You need a valid <span className="font-medium text-foreground">@wfu.edu</span> email to create an account.</span>
             </li>
             <li className="flex gap-2.5">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />
-              One account per student. Don&apos;t share your sign-in link with others.
+              <span>One account per person. Keep your sign-in link private.</span>
             </li>
           </ul>
         </section>
 
         {/* Safety */}
         <section>
-          <h2 className="text-lg font-bold text-foreground">Safety first</h2>
+          <h2 className="text-lg font-bold text-foreground">Staying safe</h2>
           <ul className="mt-3 space-y-2.5 text-sm leading-relaxed text-muted-foreground">
             <li className="flex gap-2.5">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />
-              Always meet in well-lit, public locations on campus &mdash; the Quad, ZSR Library lobby, Benson Center, or another busy area.
+              <span>Meet in public, well-lit spots on campus &mdash; the Quad, ZSR&nbsp;Library lobby, Benson, or any other high-traffic area.</span>
             </li>
             <li className="flex gap-2.5">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />
-              Inspect items in person before completing payment. Once you pay, the transaction is between you and the seller.
+              <span>Always inspect an item in person before you pay. Once a transaction is complete, it&apos;s between buyer and seller.</span>
             </li>
             <li className="flex gap-2.5">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />
-              Use your best judgment. If something feels off, trust your instincts and walk away.
+              <span>Trust your judgment. If a deal doesn&apos;t feel right, it&apos;s okay to walk away.</span>
             </li>
           </ul>
         </section>
 
         {/* Prohibited */}
         <section>
-          <h2 className="text-lg font-bold text-foreground">Prohibited items</h2>
+          <h2 className="text-lg font-bold text-foreground">What&apos;s not allowed</h2>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Do not list weapons, drugs, alcohol, tobacco, stolen goods, counterfeit
-            items, or anything that violates Wake Forest&apos;s{" "}
-            <span className="font-medium text-foreground">Student Code of Conduct</span>.
-            Listings that violate these rules will be removed, and accounts may be
-            suspended.
+            Weapons, drugs, alcohol, tobacco, stolen property, counterfeit
+            goods, and anything that violates Wake Forest&apos;s{" "}
+            <span className="font-medium text-foreground">Student Code of Conduct</span>{" "}
+            are strictly prohibited. We&apos;ll remove listings that break these
+            rules and may suspend the account behind them.
           </p>
         </section>
 
         {/* Your responsibility */}
         <section>
-          <h2 className="text-lg font-bold text-foreground">Your responsibility</h2>
+          <h2 className="text-lg font-bold text-foreground">How QuadSwap works</h2>
           <ul className="mt-3 space-y-2.5 text-sm leading-relaxed text-muted-foreground">
             <li className="flex gap-2.5">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />
-              QuadSwap connects buyers and sellers &mdash; we don&apos;t process payments, hold funds, or guarantee transactions.
+              <span>We connect buyers and sellers. QuadSwap does not handle payments, hold funds, or guarantee any transaction.</span>
             </li>
             <li className="flex gap-2.5">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />
-              You&apos;re responsible for the accuracy of your listings and for completing transactions honestly.
+              <span>List items honestly and complete transactions in good faith. You&apos;re accountable for what you post and what you promise.</span>
             </li>
             <li className="flex gap-2.5">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />
-              Be respectful in messages. Harassment, spam, or scam attempts will result in account removal.
+              <span>Keep conversations respectful. Harassment, spam, and scam attempts are grounds for immediate removal.</span>
             </li>
           </ul>
         </section>
 
         {/* Closing */}
         <section>
-          <h2 className="text-lg font-bold text-foreground">Questions?</h2>
+          <h2 className="text-lg font-bold text-foreground">Feedback welcome</h2>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            QuadSwap is a student-built project. If you have questions, concerns,
-            or feedback, reach out to us &mdash; we&apos;re students too and we
-            want to get this right.
+            QuadSwap is built by students, for students. If something&apos;s
+            broken, confusing, or could be better &mdash; we want to hear it.
           </p>
         </section>
       </div>

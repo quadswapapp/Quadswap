@@ -14,6 +14,7 @@ export default function ListingDetailPage() {
   const router = useRouter();
   const [listing, setListing] = useState<Listing | null>(null);
   const [seller, setSeller] = useState<Profile | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -21,20 +22,20 @@ export default function ListingDetailPage() {
     const supabase = createClient();
 
     async function fetchListing() {
-      const { data, error } = await supabase
-        .from("listings")
-        .select("*, profiles(*)")
-        .eq("id", id)
-        .single();
+      const [listingRes, userRes] = await Promise.all([
+        supabase.from("listings").select("*, profiles(*)").eq("id", id).single(),
+        supabase.auth.getUser(),
+      ]);
 
-      if (error || !data) {
-        console.error("Error fetching listing:", error);
+      if (listingRes.error || !listingRes.data) {
+        console.error("Error fetching listing:", listingRes.error);
         setLoading(false);
         return;
       }
 
-      setListing(data);
-      setSeller(data.profiles ?? null);
+      setListing(listingRes.data);
+      setSeller(listingRes.data.profiles ?? null);
+      setCurrentUserId(userRes.data.user?.id ?? null);
       setLoading(false);
     }
 
@@ -48,6 +49,7 @@ export default function ListingDetailPage() {
     } = await supabase.auth.getUser();
 
     if (!user || !listing) return;
+    if (user.id === listing.seller_id) return;
 
     const { data: existing } = await supabase
       .from("conversations")
@@ -195,7 +197,17 @@ export default function ListingDetailPage() {
             <span>{listing.pickup_location}</span>
           </div>
 
-          {!listing.sold && (
+          {!listing.sold && currentUserId === listing.seller_id ? (
+            <Link
+              href="/profile/listings"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface py-3.5 text-sm font-semibold text-muted-foreground transition-all hover:border-gold/30 hover:text-foreground"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+              </svg>
+              Manage My Listings
+            </Link>
+          ) : !listing.sold && (
             <button
               onClick={handleContact}
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gold py-3.5 text-sm font-bold uppercase tracking-wider text-background transition-all hover:bg-gold-light hover:shadow-lg hover:shadow-gold/20 active:scale-[0.98]"
