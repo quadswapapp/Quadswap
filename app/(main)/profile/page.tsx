@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import SellerProfileCard from "@/components/SellerProfileCard";
-import type { Profile } from "@/lib/types";
+import ListingCard from "@/components/ListingCard";
+import type { Profile, Listing } from "@/lib/types";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,17 +25,26 @@ export default function ProfilePage() {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+      const [profileRes, listingsRes] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", user.id).single(),
+        supabase
+          .from("listings")
+          .select("*")
+          .eq("seller_id", user.id)
+          .eq("sold", false)
+          .order("created_at", { ascending: false }),
+      ]);
 
-      if (error) {
-        console.error("Error fetching profile:", error);
+      if (profileRes.error) {
+        console.error("Error fetching profile:", profileRes.error);
       } else {
-        setProfile(data);
+        setProfile(profileRes.data);
       }
+
+      if (listingsRes.data) {
+        setListings(listingsRes.data);
+      }
+
       setLoading(false);
     }
 
@@ -42,42 +53,119 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="py-20 text-center text-zinc-500">Loading...</div>
+      <div className="mx-auto max-w-2xl px-4 py-8">
+        <div className="h-8 w-40 animate-pulse rounded-lg bg-surface" />
+        <div className="mt-6 h-32 animate-pulse rounded-2xl bg-surface" />
+        <div className="mt-6 space-y-3">
+          <div className="h-16 animate-pulse rounded-xl bg-surface" />
+          <div className="h-16 animate-pulse rounded-xl bg-surface" />
+        </div>
+      </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-        <p className="text-zinc-500">
+      <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-20">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-8 w-8 text-muted">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+          </svg>
+        </div>
+        <p className="text-sm font-medium text-muted-foreground">
           Please sign in to view your profile.
         </p>
+        <Link
+          href="/login"
+          className="mt-4 rounded-lg bg-gold/10 px-4 py-2 text-sm font-semibold text-gold transition-all hover:bg-gold/20"
+        >
+          Sign In
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="mb-6 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-        My Profile
+    <div className="mx-auto max-w-2xl px-4 py-6 sm:py-8">
+      <h1 className="mb-5 text-3xl font-bold tracking-tight text-foreground">
+        My <span className="text-gold">Profile</span>
       </h1>
 
       <SellerProfileCard profile={profile} />
 
+      {/* Quick stats */}
+      <div className="mt-6 grid grid-cols-3 gap-3">
+        <div className="rounded-xl border border-border bg-surface p-4 text-center">
+          <p className="text-2xl font-bold text-gold">{listings.length}</p>
+          <p className="mt-1 text-[11px] font-medium uppercase tracking-wider text-muted">Active</p>
+        </div>
+        <div className="rounded-xl border border-border bg-surface p-4 text-center">
+          <p className="text-2xl font-bold text-gold">{profile.items_sold}</p>
+          <p className="mt-1 text-[11px] font-medium uppercase tracking-wider text-muted">Sold</p>
+        </div>
+        <div className="rounded-xl border border-border bg-surface p-4 text-center">
+          <p className="text-lg font-bold text-foreground">
+            {new Date(profile.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+          </p>
+          <p className="mt-1 text-[11px] font-medium uppercase tracking-wider text-muted">Joined</p>
+        </div>
+      </div>
+
+      {/* Navigation links */}
       <div className="mt-6 space-y-3">
         <Link
           href="/profile/listings"
-          className="block rounded-xl border border-zinc-200 bg-white p-4 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+          className="flex items-center justify-between rounded-xl border border-border bg-surface p-4 transition-all hover:border-gold/30 hover:bg-surface-hover"
         >
-          My Listings &rarr;
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5 text-gold">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">My Listings</p>
+              <p className="text-xs text-muted">Manage your items for sale</p>
+            </div>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5 text-muted">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
         </Link>
         <Link
           href="/messages"
-          className="block rounded-xl border border-zinc-200 bg-white p-4 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+          className="flex items-center justify-between rounded-xl border border-border bg-surface p-4 transition-all hover:border-gold/30 hover:bg-surface-hover"
         >
-          Messages &rarr;
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5 text-gold">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Messages</p>
+              <p className="text-xs text-muted">View your conversations</p>
+            </div>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5 text-muted">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
         </Link>
       </div>
+
+      {/* Active listings */}
+      {listings.length > 0 && (
+        <div className="mt-8">
+          <h2 className="mb-4 text-lg font-bold text-foreground">
+            Active <span className="text-gold">Listings</span>
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {listings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

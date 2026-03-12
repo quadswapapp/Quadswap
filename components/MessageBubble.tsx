@@ -18,16 +18,16 @@ export default function MessageBubble({
       className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
     >
       <div
-        className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
+        className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
           isOwn
-            ? "bg-emerald-600 text-white"
-            : "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
+            ? "rounded-br-md bg-gold text-background"
+            : "rounded-bl-md border border-border bg-surface text-foreground"
         }`}
       >
         <p>{message.content}</p>
         <p
-          className={`mt-1 text-[10px] ${
-            isOwn ? "text-emerald-200" : "text-zinc-400"
+          className={`mt-1 text-right text-[10px] ${
+            isOwn ? "text-background/50" : "text-muted"
           }`}
         >
           {new Date(message.created_at).toLocaleTimeString([], {

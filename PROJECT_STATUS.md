@@ -1,7 +1,7 @@
- # QuadSwap Project Status
-
-## Claude Handoff Summary                   
-                                                                QuadSwap V1 — Handoff Summary                           
+Here's your paste-ready handoff:                        
+                                                         
+  ---                                                     
+  QuadSwap V1 — Handoff Summary                           
                                                           
   Status: Builds cleanly, 13 routes, dark+gold design     
   system complete. Magic-link auth (@wfu.edu only)        

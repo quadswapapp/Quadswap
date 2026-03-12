@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import MessageBubble from "@/components/MessageBubble";
 import ChatInput from "@/components/ChatInput";
@@ -29,7 +30,6 @@ export default function ConversationPage() {
 
       setCurrentUserId(user.id);
 
-      // Load existing messages
       const { data, error } = await supabase
         .from("messages")
         .select("*")
@@ -44,7 +44,6 @@ export default function ConversationPage() {
 
       setLoading(false);
 
-      // Subscribe to realtime messages
       const channel = supabase
         .channel(`messages:${conversationId}`)
         .on(
@@ -58,7 +57,6 @@ export default function ConversationPage() {
           (payload) => {
             const newMsg = payload.new as Message;
             setMessages((prev) => {
-              // Avoid duplicates
               if (prev.some((m) => m.id === newMsg.id)) return prev;
               return [...prev, newMsg];
             });
@@ -99,24 +97,53 @@ export default function ConversationPage() {
 
   if (loading) {
     return (
-      <div className="py-20 text-center text-zinc-500">Loading...</div>
+      <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-2xl flex-col px-4 py-4">
+        <div className="flex-1 space-y-3 py-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}>
+              <div className="h-12 w-48 animate-pulse rounded-2xl bg-surface" />
+            </div>
+          ))}
+        </div>
+      </div>
     );
   }
 
   if (!currentUserId) {
     return (
-      <div className="py-20 text-center text-zinc-500">
-        Please sign in to view messages.
+      <div className="flex flex-col items-center justify-center py-20">
+        <p className="text-sm font-medium text-muted-foreground">
+          Please sign in to view messages.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-2xl flex-col px-4 py-4">
+    <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-2xl flex-col px-4">
+      {/* Chat header */}
+      <div className="flex items-center gap-3 border-b border-border py-3.5">
+        <Link
+          href="/messages"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </Link>
+        <p className="text-sm font-semibold text-foreground">Conversation</p>
+      </div>
+
+      {/* Messages */}
       <div className="flex-1 space-y-3 overflow-y-auto py-4">
         {messages.length === 0 ? (
-          <div className="py-20 text-center text-zinc-400">
-            No messages yet. Start the conversation!
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-surface">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 text-muted">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+              </svg>
+            </div>
+            <p className="text-xs text-muted">Start the conversation!</p>
           </div>
         ) : (
           messages.map((msg) => (
@@ -130,7 +157,8 @@ export default function ConversationPage() {
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
+      {/* Input */}
+      <div className="border-t border-border pb-4 pt-3 sm:pb-3">
         <ChatInput onSend={handleSend} />
       </div>
     </div>

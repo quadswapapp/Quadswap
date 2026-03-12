@@ -27,14 +27,17 @@ export default function ChatInput({
         onChange={(e) => setText(e.target.value)}
         placeholder="Type a message..."
         disabled={disabled}
-        className="flex-1 rounded-full border border-zinc-300 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+        className="flex-1 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground shadow-sm shadow-black/20 outline-none placeholder:text-muted transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20"
       />
       <button
         type="submit"
         disabled={disabled || !text.trim()}
-        className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+        className="flex items-center gap-1.5 rounded-xl bg-gold px-4 py-3 text-sm font-bold text-background transition-all hover:bg-gold-light disabled:opacity-40 active:scale-95"
       >
         Send
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+          <path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.155.75.75 0 0 0 0-1.114A28.897 28.897 0 0 0 3.105 2.288Z" />
+        </svg>
       </button>
     </form>
   );
