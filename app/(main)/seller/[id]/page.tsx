@@ -5,19 +5,22 @@ import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import ListingCard from "@/components/ListingCard";
+import ReportModal from "@/components/ReportModal";
 import type { Profile, Listing } from "@/lib/types";
 
 export default function SellerProfilePage() {
   const { id } = useParams<{ id: string }>();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reportOpen, setReportOpen] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
 
-    async function fetch() {
-      const [profileRes, listingsRes] = await Promise.all([
+    async function fetchData() {
+      const [profileRes, listingsRes, userRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", id).single(),
         supabase
           .from("listings")
@@ -25,14 +28,16 @@ export default function SellerProfilePage() {
           .eq("seller_id", id)
           .eq("sold", false)
           .order("created_at", { ascending: false }),
+        supabase.auth.getUser(),
       ]);
 
       if (profileRes.data) setProfile(profileRes.data);
       if (listingsRes.data) setListings(listingsRes.data);
+      setCurrentUserId(userRes.data.user?.id ?? null);
       setLoading(false);
     }
 
-    fetch();
+    fetchData();
   }, [id]);
 
   if (loading) {
@@ -134,6 +139,24 @@ export default function SellerProfilePage() {
           </div>
         )}
       </div>
+
+      {currentUserId && currentUserId !== id && (
+        <button
+          onClick={() => setReportOpen(true)}
+          className="mt-6 flex w-full items-center justify-center gap-1.5 py-2 text-xs text-muted transition-colors hover:text-muted-foreground"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
+          </svg>
+          Report this user
+        </button>
+      )}
+
+      <ReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        reportedUserId={id}
+      />
     </div>
   );
 }

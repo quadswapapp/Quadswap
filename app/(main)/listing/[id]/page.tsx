@@ -7,6 +7,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import SellerProfileCard from "@/components/SellerProfileCard";
+import ReportModal from "@/components/ReportModal";
 import type { Listing, Profile } from "@/lib/types";
 
 export default function ListingDetailPage() {
@@ -17,6 +18,7 @@ export default function ListingDetailPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [reportOpen, setReportOpen] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -224,8 +226,27 @@ export default function ListingDetailPage() {
               <SellerProfileCard profile={seller} />
             </Link>
           )}
+
+          {currentUserId && currentUserId !== listing.seller_id && (
+            <button
+              onClick={() => setReportOpen(true)}
+              className="mt-4 flex w-full items-center justify-center gap-1.5 py-2 text-xs text-muted transition-colors hover:text-muted-foreground"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
+              </svg>
+              Report this listing
+            </button>
+          )}
         </div>
       </motion.div>
+
+      <ReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        listingId={listing.id}
+        reportedUserId={listing.seller_id}
+      />
     </div>
   );
 }
