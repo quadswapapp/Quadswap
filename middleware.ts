@@ -32,7 +32,18 @@ export async function middleware(request: NextRequest) {
   // Refresh the auth token — this is the critical call.
   // Do NOT use getSession() here; getUser() hits the Supabase auth server
   // and ensures the token is valid.
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Redirect unauthenticated users away from protected routes
+  const protectedPaths = ["/sell", "/messages", "/profile"];
+  const isProtected = protectedPaths.some((p) =>
+    request.nextUrl.pathname.startsWith(p)
+  );
+
+  if (isProtected && !user) {
+    const loginUrl = new URL("/login", request.url);
+    return NextResponse.redirect(loginUrl);
+  }
 
   return supabaseResponse;
 }

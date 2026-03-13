@@ -44,10 +44,21 @@ export default function MyListingsPage() {
     setUpdatingId(listingId);
     const supabase = createClient();
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setUpdatingId(null);
+      return;
+    }
+
+    // Only the listing owner can mark their own listing as sold
     const { error } = await supabase
       .from("listings")
       .update({ sold: true })
-      .eq("id", listingId);
+      .eq("id", listingId)
+      .eq("seller_id", user.id);
 
     if (error) {
       console.error("Error marking as sold:", error);

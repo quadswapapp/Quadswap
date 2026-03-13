@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import SellerProfileCard from "@/components/SellerProfileCard";
 import ListingCard from "@/components/ListingCard";
 import type { Profile, Listing } from "@/lib/types";
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -152,6 +154,32 @@ export default function ProfilePage() {
           </svg>
         </Link>
       </div>
+
+      {/* Sign out */}
+      <button
+        onClick={async () => {
+          const supabase = createClient();
+          await supabase.auth.signOut();
+          router.push("/browse");
+          router.refresh();
+        }}
+        className="mt-3 flex w-full items-center justify-between rounded-xl border border-border bg-surface p-4 transition-all hover:border-red-500/30 hover:bg-surface-hover"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5 text-red-400">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+            </svg>
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-foreground">Sign Out</p>
+            <p className="text-xs text-muted">Log out of your account</p>
+          </div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5 text-muted">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
+      </button>
 
       {/* Active listings */}
       {listings.length > 0 && (

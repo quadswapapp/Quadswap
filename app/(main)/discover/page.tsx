@@ -19,7 +19,7 @@ const SAMPLE_LISTINGS: Listing[] = [
     image_urls: ["https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop"],
     pickup_location: "Student Union",
     sold: false,
-    created_at: new Date().toISOString(),
+    created_at: "2025-03-01T00:00:00.000Z",
   },
   {
     id: "discover-2",
@@ -32,7 +32,7 @@ const SAMPLE_LISTINGS: Listing[] = [
     image_urls: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop"],
     pickup_location: "Library Lobby",
     sold: false,
-    created_at: new Date().toISOString(),
+    created_at: "2025-03-01T00:00:00.000Z",
   },
   {
     id: "discover-3",
@@ -45,7 +45,7 @@ const SAMPLE_LISTINGS: Listing[] = [
     image_urls: ["https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=400&h=400&fit=crop"],
     pickup_location: "East Parking Lot",
     sold: false,
-    created_at: new Date().toISOString(),
+    created_at: "2025-03-01T00:00:00.000Z",
   },
   {
     id: "discover-4",
@@ -58,7 +58,7 @@ const SAMPLE_LISTINGS: Listing[] = [
     image_urls: ["https://images.unsplash.com/photo-1587145820266-a5951ee6f620?w=400&h=400&fit=crop"],
     pickup_location: "Engineering Building",
     sold: false,
-    created_at: new Date().toISOString(),
+    created_at: "2025-03-01T00:00:00.000Z",
   },
 ];
 

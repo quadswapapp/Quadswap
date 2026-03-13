@@ -1,16 +1,44 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/browse";
 
   if (code) {
-    const supabase = await createClient();
+    // Create the redirect response FIRST so we can attach session cookies to it.
+    // Using the shared createClient() from lib/supabase/server.ts writes cookies
+    // via cookieStore.set(), but NextResponse.redirect() creates a separate
+    // response that doesn't carry those cookies — causing the session to be lost.
+    const response = NextResponse.redirect(`${origin}${next}`);
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options);
+            });
+          },
+        },
+      }
+    );
+
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
+      // Server-side enforcement: only @wfu.edu emails allowed
+      if (!data.user.email?.endsWith("@wfu.edu")) {
+        await supabase.auth.signOut();
+        return NextResponse.redirect(`${origin}/login?error=invalid_email`);
+      }
+
       // Ensure a profile row exists (auto-create on first magic-link login)
       const { data: existing } = await supabase
         .from("profiles")
@@ -33,7 +61,7 @@ export async function GET(request: Request) {
         });
       }
 
-      return NextResponse.redirect(`${origin}${next}`);
+      return response;
     }
   }
 

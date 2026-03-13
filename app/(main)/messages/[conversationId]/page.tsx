@@ -13,10 +13,13 @@ export default function ConversationPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
+  const [sendError, setSendError] = useState("");
+  const [unauthorized, setUnauthorized] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const supabase = createClient();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
     async function init() {
       const {
@@ -29,6 +32,19 @@ export default function ConversationPage() {
       }
 
       setCurrentUserId(user.id);
+
+      // Verify the current user is a participant in this conversation
+      const { data: conv, error: convError } = await supabase
+        .from("conversations")
+        .select("buyer_id, seller_id")
+        .eq("id", conversationId)
+        .single();
+
+      if (convError || !conv || (conv.buyer_id !== user.id && conv.seller_id !== user.id)) {
+        setUnauthorized(true);
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from("messages")
@@ -44,7 +60,7 @@ export default function ConversationPage() {
 
       setLoading(false);
 
-      const channel = supabase
+      channel = supabase
         .channel(`messages:${conversationId}`)
         .on(
           "postgres_changes",
@@ -63,15 +79,12 @@ export default function ConversationPage() {
           }
         )
         .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     }
 
-    const cleanup = init();
+    init();
+
     return () => {
-      cleanup.then((fn) => fn?.());
+      if (channel) supabase.removeChannel(channel);
     };
   }, [conversationId]);
 
@@ -81,6 +94,7 @@ export default function ConversationPage() {
 
   const handleSend = async (content: string) => {
     if (!currentUserId) return;
+    setSendError("");
 
     const supabase = createClient();
 
@@ -92,6 +106,7 @@ export default function ConversationPage() {
 
     if (error) {
       console.error("Error sending message:", error);
+      setSendError("Failed to send message. Please try again.");
     }
   };
 
@@ -115,6 +130,22 @@ export default function ConversationPage() {
         <p className="text-sm font-medium text-muted-foreground">
           Please sign in to view messages.
         </p>
+      </div>
+    );
+  }
+
+  if (unauthorized) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <p className="text-sm font-medium text-muted-foreground">
+          You don&apos;t have access to this conversation.
+        </p>
+        <Link
+          href="/messages"
+          className="mt-4 rounded-lg bg-gold/10 px-4 py-2 text-sm font-semibold text-gold transition-all hover:bg-gold/20"
+        >
+          Back to Messages
+        </Link>
       </div>
     );
   }
@@ -159,6 +190,11 @@ export default function ConversationPage() {
 
       {/* Input */}
       <div className="border-t border-border pb-4 pt-3 sm:pb-3">
+        {sendError && (
+          <div className="mb-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+            {sendError}
+          </div>
+        )}
         <ChatInput onSend={handleSend} />
       </div>
     </div>
