@@ -1,23 +1,29 @@
 /**
  * Seed script — populates QuadSwap with realistic sample listings.
  *
+ * ⚠ LOCAL/ADMIN USE ONLY — uses the Supabase service role key to bypass RLS.
+ * Never import this file from browser/client code or commit the key to git.
+ *
  * Usage:
- *   npx tsx scripts/seed-listings.ts
+ *   SEED_USER_ID=<uuid> npx tsx scripts/seed-listings.ts
  *
  * Prerequisites:
- *   1. NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local
+ *   1. NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local
  *   2. A seed user must already exist in auth + profiles.
- *      Set SEED_USER_ID below (or pass via env: SEED_USER_ID=<uuid> npx tsx …)
  */
 
 import { createClient } from "@supabase/supabase-js";
 import "dotenv/config";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local");
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  console.error(
+    "Missing env vars. Make sure .env.local contains:\n" +
+      "  NEXT_PUBLIC_SUPABASE_URL=…\n" +
+      "  SUPABASE_SERVICE_ROLE_KEY=…"
+  );
   process.exit(1);
 }
 
@@ -32,7 +38,8 @@ if (SEED_USER_ID === "YOUR_SEED_USER_UUID_HERE") {
   process.exit(1);
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Service role client — bypasses RLS. Only used in this CLI script.
+const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
 // Placeholder images from picsum.photos — each listing gets a unique seed
 const placeholder = (seed: number) =>
@@ -222,6 +229,30 @@ const listings: SeedListing[] = [
 ];
 
 async function seed() {
+  // Guard against accidental duplicate runs
+  const { count, error: countError } = await supabase
+    .from("listings")
+    .select("*", { count: "exact", head: true })
+    .eq("seller_id", SEED_USER_ID);
+
+  if (countError) {
+    console.error("Failed to check existing listings:", countError.message);
+    process.exit(1);
+  }
+
+  if (count && count > 0) {
+    console.warn(
+      `⚠ This user already has ${count} listing(s) in the database.\n` +
+        "  Running the seed again will create duplicates.\n" +
+        "  To proceed anyway, re-run with --force:\n\n" +
+        "    SEED_USER_ID=<uuid> npx tsx scripts/seed-listings.ts --force\n"
+    );
+    if (!process.argv.includes("--force")) {
+      process.exit(0);
+    }
+    console.log("--force flag detected, continuing…\n");
+  }
+
   console.log(`Seeding ${listings.length} listings for user ${SEED_USER_ID}…`);
 
   const { data, error } = await supabase.from("listings").insert(listings).select("id, title");
@@ -231,7 +262,7 @@ async function seed() {
     process.exit(1);
   }
 
-  console.log(`Inserted ${data.length} listings:`);
+  console.log(`\nInserted ${data.length} listings:`);
   data.forEach((l: { id: string; title: string }) => console.log(`  • ${l.title} (${l.id})`));
   console.log("\nDone! Browse /browse to see them.");
 }

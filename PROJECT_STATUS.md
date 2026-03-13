@@ -38,6 +38,45 @@ Here's your paste-ready handoff:
   test auth flow end-to-end.
 
   ---
+
+  ## Seed Listings
+
+  The seed script at `scripts/seed-listings.ts` inserts 14
+  realistic sample listings into the `listings` table for
+  beta testing.
+
+  ### How to find your SEED_USER_ID
+
+  1. Open the Supabase dashboard for this project:
+     https://supabase.com/dashboard/project/nsdxwjcogocatycvgvuo
+  2. Go to **Authentication → Users**
+  3. Find the test account you signed in with (your @wfu.edu
+     email)
+  4. Copy the **User UID** — this is the UUID you need
+
+     Alternatively, go to **Table Editor → profiles** and
+     copy the `id` column value for your user row.
+
+  ### How to run
+
+  ```
+  SEED_USER_ID=<your-uuid> npx tsx scripts/seed-listings.ts
+  ```
+
+  The script reads Supabase credentials from `.env.local`
+  (NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY).
+
+  ### Duplicate protection
+
+  The script checks whether the seed user already has
+  listings. If any exist, it warns and exits. To override
+  this and insert anyway, add the `--force` flag:
+
+  ```
+  SEED_USER_ID=<your-uuid> npx tsx scripts/seed-listings.ts --force
+  ```
+
+  ---
   Both files are also saved to persistent memory at
   memory/MEMORY.md and memory/handoff.md so future
   sessions pick them up automatically.
